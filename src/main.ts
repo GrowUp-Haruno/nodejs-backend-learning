@@ -4,6 +4,7 @@ const app = express();
 const port = 8080;
 
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json())
 
 app.get('/', (req, res) => {
   res.send(`
@@ -42,9 +43,45 @@ app.post(
   }
 );
 
+app.get('/json', (req, res) => {
+  res.send({ message: 'hello' });
+});
 
+app.get('/send-json', (req, res) => {
+  res.send(`
+    <form action="/send-json/result" method="POST">
+      <input type="text" name="title">
+      <input type="text" name="description">
+      <input type="submit">
+    </form>
+    <script>
+      const formEl = document.querySelector('form')
+      formEl.onsubmit = function(event) {
+        event.preventDefault();
+        const title = formEl[0].value
+        const desc = formEl[1].value
+        const data = {title, desc}
+        fetch('/send-json/result',{
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        }).then(async(res)=>{
+          const data = await res.json();
+          console.log(data)
+        })
+      }
+    </script>
+  `);
+});
 
-
+app.post(
+  '/send-json/result',
+  (req, res) => {
+    res.json({message:'success'})
+  }
+);
 
 // 必ず最後に配置すること
 app.listen(port, () => {
